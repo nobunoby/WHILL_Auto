@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="make_map" default="false"/>
+  <arg name="teleop" default="false" />
+
+  <group if="$(arg teleop)">
+    <node name="joy" pkg="joy" type="joy_node" output="log">
+    </node>
+    <node name="joy_twist" pkg="teleop_twist_joy" type="teleop_node" output="log">
+        <remap from="/cmd_vel" to="/whill/controller/cmd_vel" />
+    </node>
+  </group>
+
+
+  <node pkg="tf" type="static_transform_publisher" name="tf_base_scan" args="0 0 1 -0.1 -0.1 0 base_link scan 100" />
+  <node pkg="tf" type="static_transform_publisher" name="tf_map_odom" args="0 0 0 0 0 0 map odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="tf_base_laser" args="0 0 1 -0.1 -0.1 0 base_link laser 100" />
+
+
+  <group if="$(arg make_map)">
+    <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="log">
+      <param name="srr" value="0.01"/>
+      <param name="srt" value="0.02"/>
+      <param name="str" value="0.01"/>
+      <param name="stt" value="0.02"/>
+      <param name="linearUpdate" value="0.5"/>
+      <param name="angularUpdate" value="0.436"/>
+    </node>
+  </group>
+
+  <group unless="$(arg make_map)">
+    <include file="$(find whill_launch)/launch/amcl.launch" >
+    </include>
+
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find whill_launch)/maps/srg_203.yaml"/>
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+      <rosparam file="$(find whill_launch)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+      <rosparam file="$(find whill_launch)/config/global_costmap_params.yaml" command="load" />
+
+      <rosparam file="$(find whill_launch)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+      <rosparam file="$(find whill_launch)/config/local_costmap_params.yaml" command="load" />
+      <rosparam file="$(find whill_launch)/config/base_local_planner_params.yaml" command="load" />
+      
+      <!-- <param name="recovery_behavior_enabled" value="false">  default="true" -->
+      <param name="clearing_rotation_allowed" value="false"/>
+      <param name="max_planning_retries" value="5" />
+
+      <remap from="/cmd_vel" to="/whill/controller/cmd_vel" />
+    </node>
+
+    <!--
+    <node name="vector_map" pkg="vector_map" type="vector_map_test.py" output="log">
+      <param name="data_file_path" value="$(find whill_launch)/config/data_for_v3.txt" />
+      <param name="name_file_path" value="$(find whill_launch)/config/area_name_for_v3.txt" />
+      <param name="yaml_file_path" value="$(find whill_launch)/maps/office_v3.yaml" />
+      <param name="map_file_path"  value="$(find whill_launch)/maps/office_v3.pgm" />
+    </node>
+    -->
+  </group>
+
+  <!--
+  <node name="goal_pose_list_pub" pkg="goal_pose_list_pub" type="goal_pose_list_publisher.py" output="log">
+    <param name="data_file_path" value="$(find whill_launch)/config/data_for_v3.txt" />
+    <param name="name_file_path" value="$(find whill_launch)/config/area_name_for_v3.txt" />
+    <param name="yaml_file_path" value="$(find whill_launch)/maps/office_v3.yaml" />
+    <param name="map_file_path"  value="$(find whill_launch)/maps/office_v3.pgm" />
+  </node>
+  -->
+
+</launch>

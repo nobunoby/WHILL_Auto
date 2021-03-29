@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="make_map" default="false"/>
+
+  <node name="joy" pkg="joy" type="joy_node" output="log">
+  </node>
+  <node name="joy_twist" pkg="teleop_twist_joy" type="teleop_node" output="log">
+    <remap from="/cmd_vel" to="/whill/controller/cmd_vel" />
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="tf_base_scan" args="0 0 1 -0.2 0 0 base_link scan 100" />
+  <node pkg="tf" type="static_transform_publisher" name="tf_map_odom" args="0 0 0 0 0 0 map odom 100" />
+  <node pkg="tf" type="static_transform_publisher" name="tf_base_laser" args="0 0 1 0 0 0 base_link laser 100" />
+
+  <group if="$(arg make_map)">
+    <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="log">
+      <param name="srr" value="0.01"/>
+      <param name="srt" value="0.02"/>
+      <param name="str" value="0.01"/>
+      <param name="stt" value="0.02"/>
+      <param name="linearUpdate" value="0.5"/>
+      <param name="angularUpdate" value="0.436"/>
+    </node>
+  </group>
+
+
+  <group unless="$(arg make_map)">
+    <include file="$(find whill_launch)/launch/amcl.launch" >
+    </include>
+  </group>
+
+  <group unless="$(arg make_map)">
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find whill_launch)/maps/srg_203.yaml"/>
+    <!--
+    <node name="vector_map" pkg="vector_map" type="vector_map_test.py" output="log">
+      <param name="data_file_path" value="$(find whill_launch)/config/data_for_v3.txt" />
+      <param name="name_file_path" value="$(find whill_launch)/config/area_name_for_v3.txt" />
+      <param name="yaml_file_path" value="$(find whill_launch)/maps/office_v3.yaml" />
+      <param name="map_file_path"  value="$(find whill_launch)/maps/office_v3.pgm" />
+    </node>
+    -->
+  </group>
+
+  <!--
+  <node name="goal_pose_list_pub" pkg="goal_pose_list_pub" type="goal_pose_list_publisher.py" output="log">
+    <param name="data_file_path" value="$(find whill_launch)/config/data_for_v3.txt" />
+    <param name="name_file_path" value="$(find whill_launch)/config/area_name_for_v3.txt" />
+    <param name="yaml_file_path" value="$(find whill_launch)/maps/office_v3.yaml" />
+    <param name="map_file_path"  value="$(find whill_launch)/maps/office_v3.pgm" />
+  </node>
+  -->
+
+</launch>
