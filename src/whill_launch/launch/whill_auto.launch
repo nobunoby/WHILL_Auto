@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="make_map" default="false"/>
-  <arg name="teleop" default="false" />
+  <arg name="teleop" default="true" />
 
   <group if="$(arg teleop)">
     <node name="joy" pkg="joy" type="joy_node" output="log">
@@ -12,9 +12,9 @@
   </group>
 
 
-  <node pkg="tf" type="static_transform_publisher" name="tf_base_scan" args="0 0 1 -0.1 -0.1 0 base_link scan 100" />
-  <node pkg="tf" type="static_transform_publisher" name="tf_map_odom" args="0 0 0 0 0 0 map odom 100" />
-  <node pkg="tf" type="static_transform_publisher" name="tf_base_laser" args="0 0 1 -0.1 -0.1 0 base_link laser 100" />
+  <node pkg="tf" type="static_transform_publisher" name="tf_base_scan" args="0.15 0.3 1 -0.15 -0.1 0 base_link scan 100" />
+  <!-- <node pkg="tf" type="static_transform_publisher" name="tf_map_odom" args="0 0 0 0 0 0 map odom 100" /> -->
+  <node pkg="tf" type="static_transform_publisher" name="tf_base_laser" args="0.15 0.3 1 -0.15 -0.1 0 base_link laser 100" />
 
 
   <group if="$(arg make_map)">
@@ -50,7 +50,7 @@
     </node>
 
     <!--
-    <node name="vector_map" pkg="vector_map" type="vector_map_test.py" output="log">
+    <node name="vector_map" pkg="vector_map" type="vector_map_test.py" output="screen">
       <param name="data_file_path" value="$(find whill_launch)/config/data_for_v3.txt" />
       <param name="name_file_path" value="$(find whill_launch)/config/area_name_for_v3.txt" />
       <param name="yaml_file_path" value="$(find whill_launch)/maps/office_v3.yaml" />
