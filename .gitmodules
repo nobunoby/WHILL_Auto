@@ -1,0 +1,4 @@
+[submodule "src/external/navigation"]
+	path = src/external/navigation
+	url = https://github.com/ros-planning/navigation.git
+	branch = melodic-devel
